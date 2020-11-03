@@ -1,0 +1,96 @@
+---
+title: "Regression Models Peer Graded Assignment"
+author: "K Ajay Rangan"
+date: "03/11/2020"
+output: pdf_document
+---
+```{r}
+library("plyr")
+```
+
+## Automatic vs Manual Transmission for better Mileage
+
+### Instructions
+You work for Motor Trend, a magazine about the automobile industry. Looking at a data set of a collection of cars, they are interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They are particularly interested in the following two questions:
+
+“Is an automatic or manual transmission better for MPG”
+"Quantify the MPG difference between automatic and manual transmissions"
+
+## Dataset 
+
+Import the dataset
+```{r}
+data(mtcars)
+head(mtcars)
+```
+In the dataset the am column shows what type of transmission the car has.
+According to the Documentation:
+[, 9]	am	Transmission (0 = automatic, 1 = manual)
+We require only the mpg and the am column for our analysis. 
+Lets create a dataframe with only these variables.
+
+```{r}
+mydata <- mtcars[c("mpg","am")]
+head(mydata)
+```
+
+## Exploratory Analysis
+
+```{r}
+summary(mydata)
+```
+
+```{r}
+boxplot(mpg~am, data = mydata)
+```
+
+A very preliminary Analysis shows the superiority of Manual Transmission in Mileage.
+
+Lets create some models to find out, but lets also keep in mind, there may be other variables that affect this. 
+The results of the difference in mpg aren't solely due to the type of transmission. 
+
+```{r}
+count(mtcars, vars = "am")
+```
+There are slightly more Automatic than Manual cars in this dataset
+
+## Model
+
+```{r}
+premodel <- lm(mpg ~ ., mtcars);
+summary(premodel)
+```
+
+From the table we can note that wt, am, drat, qsec, gear have high coefficients and are significant in our model
+
+Lets compare multiple models using ANOVA
+
+```{r}
+anova(lm(mpg ~ am, mtcars),                           
+      lm(mpg ~ am + wt, mtcars),                      
+      lm(mpg ~ am + wt + qsec, mtcars),               
+      lm(mpg ~ am + wt + qsec + drat, mtcars),        
+      lm(mpg ~ am + wt + qsec + drat + gear, mtcars)
+      )     
+```
+
+We see high P values for the 4th and 5th Model. 
+The 3rd model seems to be a better one given lower RSS and P.
+This includes am, wt and qsec.
+
+```{r}
+model2 <- lm(mpg ~ am + wt + qsec, mtcars)
+par(mfrow = c(2,2)); plot(model2)
+```
+
+```{r}
+model1 <- lm(mpg~am,mtcars)
+coef(model1)
+coef(model2)
+```
+
+## Executive Summary
+As we can see in general Manual cars have a mileage about 7.244939 higher than automatic transmission. 
+If we bring in other variables like wt and qsec which are significant into the picture, Manual cars have higher mileage by about 2.935837.
+
+In either case its safe to say Manual cars have a better mileage.
